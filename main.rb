@@ -1,6 +1,7 @@
 require 'open-uri'
 require 'json'
 require 'uri'
+require 'pg'
 
 class RequestBuilder
     attr_reader :api_url, :api_key, :data_type
@@ -36,17 +37,23 @@ class TrafficTimeDataGrabber
 
     def getTravelTime(request_string)
         distance_data = parseRequestAsJson(request_string)
-        distance_data["routes"][0]["legs"][0]["duration_in_traffic"]["text"]
+        distance_data["routes"][0]["legs"][0]["duration_in_traffic"]["value"]
     end
 
 end
 
 class Location
-    attr_reader :name, :coordinates
+    attr_reader :id, :name, :latitude, :longitude
 
-    def initialize(name, coordinates)
-        @name = name
-        @coordinates = coordinates
+    def initialize(args)
+        @id = args[:id]
+        @name = args[:name]
+        @latitude = args[:latitude]
+        @longitude = args[:longitude]
+    end
+
+    def coordinates
+        latitude.to_s + "," + longitude.to_s
     end
 
 end
@@ -74,27 +81,38 @@ class TravelTimer
 
 end
 
-apartments = [
-    park_place_olde_town = Location.new("Park Place Olde Town", "39.8012167,-105.0796034"),
-    water_tower_flats = Location.new("Water Tower Flats", "39.797182,-105.0856092"),
-    arvada_station = Location.new("Arvada Station", "39.791344,-105.1134387")
-]
+module LocationPersistence
+    def LocationPersistence.createLocationFromRow(row)
+        Location.new(:id => row["id"],
+                     :name => row["name"],
+                     :latitude => row["latitude"],
+                     :longitude => row["longitude"])
+    end
+end
 
-work_places = [
-    ecocion = Location.new("Ecocion", "39.5705252,-104.8583055"),
-    logrhythm = Location.new("LogRhythm", "40.0211783,-105.2419871")
-]
+apartments = []
+work_places = []
+
+conn = PG.connect(:host => '192.168.1.102', :dbname => 'ApartmentTravelTimes', :user => 'chris')
+results = conn.exec('SELECT * FROM locations')
+results.each{ |row|
+    if row["type"] == "apartment"
+        apartments.push(LocationPersistence.createLocationFromRow(row))
+    elsif row["type"] == "workplace"
+        work_places.push(LocationPersistence.createLocationFromRow(row))
+    end
+}
+
+time = conn.exec('SELECT * FROM now()')[0]["now"]
+puts time
 
 apartments.each{ |apartment|
     work_places.each{ |work_place|
         travel_timer = TravelTimer.new()
         travel_time = travel_timer.getTravelTime(apartment, work_place)
-        puts "#{apartment.name} to #{work_place.name} takes #{travel_time}"
+        puts "#{apartment.name} (#{apartment.id}) to #{work_place.name} (#{work_place.id}) takes #{travel_time} seconds"
+
+        conn.exec("INSERT INTO travel_times (date, origin_id, destination_id, travel_time) VALUES ('#{time}', #{apartment.id}, #{work_place.id}, #{travel_time})")
 
     }
 }
-
-require 'pg'
-conn = PG.connect(:host => '192.168.1.102', :dbname => 'ApartmentTravelTimes', :user => 'chris')
-res  = conn.exec('SELECT * FROM locations')
-puts res
