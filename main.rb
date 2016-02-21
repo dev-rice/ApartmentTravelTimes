@@ -93,3 +93,8 @@ apartments.each{ |apartment|
 
     }
 }
+
+require 'pg'
+conn = PG.connect(:host => '192.168.1.102', :dbname => 'ApartmentTravelTimes', :user => 'chris')
+res  = conn.exec('SELECT * FROM locations')
+puts res
