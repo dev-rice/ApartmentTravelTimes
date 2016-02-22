@@ -1,3 +1,5 @@
+#!/usr/bin/ruby
+
 require 'open-uri'
 require 'json'
 require 'uri'
@@ -104,15 +106,14 @@ results.each{ |row|
 }
 
 time = conn.exec('SELECT * FROM now()')[0]["now"]
-puts time
 
 apartments.each{ |apartment|
     work_places.each{ |work_place|
         travel_timer = TravelTimer.new()
         travel_time = travel_timer.getTravelTime(apartment, work_place)
-        puts "#{apartment.name} (#{apartment.id}) to #{work_place.name} (#{work_place.id}) takes #{travel_time} seconds"
+        # puts "#{apartment.name} (#{apartment.id}) to #{work_place.name} (#{work_place.id}) takes #{travel_time} seconds"
 
-        conn.exec("INSERT INTO travel_times (date, origin_id, destination_id, travel_time) VALUES ('#{time}', #{apartment.id}, #{work_place.id}, #{travel_time})")
+        conn.exec("INSERT INTO travel_times (leave_time, origin_id, destination_id, travel_time) VALUES ('#{time}', #{apartment.id}, #{work_place.id}, #{travel_time})")
 
     }
 }
