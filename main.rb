@@ -4,6 +4,7 @@ require 'open-uri'
 require 'json'
 require 'uri'
 require 'pg'
+require 'date'
 
 class RequestBuilder
     attr_reader :api_url, :api_key, :data_type
@@ -105,6 +106,7 @@ results.each{ |row|
     end
 }
 
+dayname = Date.parse(Time.now.to_s).strftime("%A")
 time = conn.exec('SELECT * FROM now()')[0]["now"]
 
 apartments.each{ |apartment|
@@ -113,7 +115,7 @@ apartments.each{ |apartment|
         travel_time = travel_timer.getTravelTime(apartment, work_place)
         # puts "#{apartment.name} (#{apartment.id}) to #{work_place.name} (#{work_place.id}) takes #{travel_time} seconds"
 
-        conn.exec("INSERT INTO travel_times (leave_time, origin_id, destination_id, travel_time) VALUES ('#{time}', #{apartment.id}, #{work_place.id}, #{travel_time})")
+        conn.exec("INSERT INTO travel_times (day_of_week, leave_timestamp, origin_id, destination_id, travel_time) VALUES ('#{dayname}', '#{time}', #{apartment.id}, #{work_place.id}, #{travel_time})")
 
     }
 }
