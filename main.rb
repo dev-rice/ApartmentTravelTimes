@@ -107,15 +107,14 @@ results.each{ |row|
 }
 
 dayname = Date.parse(Time.now.to_s).strftime("%A")
-time = conn.exec('SELECT * FROM now()')[0]["now"]
-
+leave_time = Time.now.strftime("%H:%M")
 apartments.each{ |apartment|
     work_places.each{ |work_place|
         travel_timer = TravelTimer.new()
         travel_time = travel_timer.getTravelTime(apartment, work_place)
         # puts "#{apartment.name} (#{apartment.id}) to #{work_place.name} (#{work_place.id}) takes #{travel_time} seconds"
 
-        conn.exec("INSERT INTO travel_times (day_of_week, leave_timestamp, origin_id, destination_id, travel_time) VALUES ('#{dayname}', '#{time}', #{apartment.id}, #{work_place.id}, #{travel_time})")
+        conn.exec("INSERT INTO travel_times (day_of_week, leave_time, origin_id, destination_id, travel_time) VALUES ('#{dayname}', '#{leave_time}', #{apartment.id}, #{work_place.id}, #{travel_time})")
 
     }
 }

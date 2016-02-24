@@ -15,6 +15,7 @@ INSERT INTO locations (name, type, latitude, longitude)  VALUES ('LogRhythm', 'w
 CREATE TABLE travel_times(  id SERIAL PRIMARY KEY,
                             day_of_week TEXT,
                             leave_timestamp TIMESTAMP DEFAULT now(),
+                            leave_time TEXT,
                             origin_id INTEGER,
                             destination_id INTEGER,
                             travel_time NUMERIC,
