@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/home/chris/.rbenv/shims/ruby
 
 require 'open-uri'
 require 'json'
