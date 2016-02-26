@@ -96,7 +96,7 @@ end
 apartments = []
 work_places = []
 
-conn = PG.connect(:host => '192.168.1.102', :dbname => 'ApartmentTravelTimes', :user => 'chris')
+conn = PG.connect(:host => '192.168.1.112', :dbname => 'ApartmentTravelTimes', :user => 'chris')
 results = conn.exec('SELECT * FROM locations')
 results.each{ |row|
     if row["type"] == "apartment"
